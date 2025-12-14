@@ -4,6 +4,7 @@ std::atomic<KeyListener*> KeyListener::m_instance = nullptr;
 std::mutex KeyListener::m_mutex;
 HHOOK KeyListener::m_hook = nullptr;
 QMap<unsigned int, QString> KeyListener::m_keyMap;
+QMap<unsigned int, bool> KeyListener::m_keyStateMap;
 
 KeyListener *KeyListener::instance()
 {
@@ -21,6 +22,44 @@ KeyListener *KeyListener::instance()
     return instance;
 }
 
+QVector<QString> KeyListener::pressedKeys() const
+{
+    // 获取当前按下的按键列表
+    QVector<QString> pressedKeys;
+    for (auto key : m_keyMap.keys())
+    {
+        if (m_keyStateMap[key])
+        {
+            // 去除Left和Right前缀
+            if (m_keyMap[key].startsWith("Left"))
+                pressedKeys.append(m_keyMap[key].mid(4));
+            else if (m_keyMap[key].startsWith("Right"))
+                pressedKeys.append(m_keyMap[key].mid(5));
+            else
+                pressedKeys.append(m_keyMap[key]);
+        }
+    }
+
+    // 排序 Control Alt Shift Win A-Z 0-9 F1-F12 其他
+    std::sort(pressedKeys.begin(), pressedKeys.end(), [](const QString& a, const QString& b) -> bool {
+        auto getType = [](const QString& key) -> int {
+            if (key == "Control") return 0;
+            if (key == "Alt") return 1;
+            if (key == "Shift") return 2;
+            if (key == "Win") return 3;
+            if (key.length() == 1 && key[0].isLetter()) return 4;
+            if (key.length() == 1 && key[0].isDigit()) return 5;
+            if (key.startsWith("F")) return 6;
+            return 7;
+        };
+        if (getType(a) != getType(b))
+            return getType(a) < getType(b);
+        return a < b;
+    });
+
+    return pressedKeys;
+}
+
 LRESULT KeyListener::keyHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode < 0) return CallNextHookEx(m_hook, nCode, wParam, lParam);
@@ -30,10 +69,12 @@ LRESULT KeyListener::keyHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
         if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
         {
+            m_keyStateMap[vkCode] = true;
             emit instance()->keyPressed(m_keyMap[vkCode]);
         }
         else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
         {
+            m_keyStateMap[vkCode] = false;
             emit instance()->keyReleased(m_keyMap[vkCode]);
         }
     }
@@ -152,6 +193,12 @@ KeyListener::KeyListener()
         {VK_OEM_6,      "]}"},
         {VK_OEM_7,      "'\""},
     };
+
+    // 初始化按键状态表
+    for (auto key : m_keyMap.keys())
+    {
+        m_keyStateMap[key] = false;
+    }
 
     m_hook = SetWindowsHookEx(WH_KEYBOARD_LL, keyHookProc, GetModuleHandle(NULL), 0); // 安装键盘钩子
 }

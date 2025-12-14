@@ -12,10 +12,10 @@ MainWindow::MainWindow(QWidget *parent)
     setFixedSize(800, 600);
 
     m_keyListener = KeyListener::instance();
-    connect(m_keyListener, &KeyListener::keyPressed, this, [](const QString& key){
-        qDebug() << "Key Pressed:" << key;
+    connect(m_keyListener, &KeyListener::keyPressed, this, [&](const QString& key){
+        qDebug() << "Key Pressed:" << m_keyListener->pressedKeys();
     });
-    connect(m_keyListener, &KeyListener::keyReleased, this, [](const QString& key){
+    connect(m_keyListener, &KeyListener::keyReleased, this, [&](const QString& key){
         qDebug() << "Key Released:" << key;
     });
 }

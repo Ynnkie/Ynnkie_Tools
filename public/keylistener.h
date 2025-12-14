@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QMap>
+#include <QVector>
 #include <mutex>
 #include <Windows.h>
 
@@ -24,6 +25,7 @@ public:
     KeyListener& operator=(const KeyListener&) = delete;
 
     static KeyListener* instance(); // 获取单例实例
+    QVector<QString> pressedKeys() const; // 获取当前按下的按键列表
 
 signals:
     void keyPressed(const QString& key);    // 按键按下信号
@@ -39,6 +41,7 @@ private:
     static std::mutex m_mutex;  // 互斥锁
     static HHOOK m_hook;    // 键盘钩子句柄
     static QMap<unsigned int, QString> m_keyMap;    // 按键映射表
+    static QMap<unsigned int, bool> m_keyStateMap;  // 按键状态表 true按下 false释放
 };
 
 #endif // KEYLISTENER_H
