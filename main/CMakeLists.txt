@@ -10,4 +10,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     # QT6
     Qt6::Widgets
     # 自定义
+    public
 ) # 链接库

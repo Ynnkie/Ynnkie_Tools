@@ -18,7 +18,11 @@ set(EXECUTABLE_OUTPUT_PATH ${EXE_PATH}) # 设置可执行文件输出路径
 
 execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/res ${RES_PATH})  # 复制资源文件
 
+# 包含目录
+include_directories(public)
+
 # 添加子目录
+add_subdirectory(public)
 add_subdirectory(main)
 
 qt_add_executable(
@@ -31,6 +35,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     # QT
     Qt6::Widgets
     # 自定义
+    public
     main
 )   # 链接库
 

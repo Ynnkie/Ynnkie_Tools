@@ -1,0 +1,166 @@
+#include "keylistener.h"
+
+std::atomic<KeyListener*> KeyListener::m_instance = nullptr;
+std::mutex KeyListener::m_mutex;
+HHOOK KeyListener::m_hook = nullptr;
+QMap<unsigned int, QString> KeyListener::m_keyMap;
+
+KeyListener *KeyListener::instance()
+{
+    KeyListener* instance = m_instance.load();  // 加载单例实例
+    if (instance == nullptr)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);  // 加锁
+        instance = m_instance.load();   // 再次加载单例实例
+        if (instance == nullptr)    // 双重检查
+        {
+            instance = new KeyListener();   // 创建单例实例
+            m_instance.store(instance); // 存储单例实例
+        }
+    }
+    return instance;
+}
+
+LRESULT KeyListener::keyHookProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    if (nCode < 0) return CallNextHookEx(m_hook, nCode, wParam, lParam);
+    unsigned int vkCode = ((KBDLLHOOKSTRUCT*)lParam)->vkCode;
+
+    if (m_keyMap.contains(vkCode))
+    {
+        if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
+        {
+            emit instance()->keyPressed(m_keyMap[vkCode]);
+        }
+        else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
+        {
+            emit instance()->keyReleased(m_keyMap[vkCode]);
+        }
+    }
+
+    return CallNextHookEx(m_hook, nCode, wParam, lParam);
+}
+
+KeyListener::KeyListener()
+{
+    // 初始化按键映射表
+    m_keyMap =
+    {
+        {VK_BACK,       "Backspace"},
+        {VK_TAB,        "Tab"},
+        {VK_RETURN,     "Enter"},
+        {VK_SHIFT,      "Shift"},
+        {VK_CONTROL,    "Control"},
+        {VK_MENU,       "Alt"},
+        {VK_PAUSE,      "Pause"},
+        {VK_CAPITAL,    "CapsLock"},
+        {VK_ESCAPE,     "Escape"},
+        {VK_SPACE,      "Space"},
+        {VK_PRIOR,      "PageUp"},
+        {VK_NEXT,       "PageDown"},
+        {VK_END,        "End"},
+        {VK_HOME,       "Home"},
+        {VK_LEFT,       "Left"},
+        {VK_UP,         "Up"},
+        {VK_RIGHT,      "Right"},
+        {VK_DOWN,       "Down"},
+        {VK_SNAPSHOT,   "PrintScreen"},
+        {VK_INSERT,     "Insert"},
+        {VK_DELETE,     "Delete"},
+        {'0',           "0"},
+        {'1',           "1"},
+        {'2',           "2"},
+        {'3',           "3"},
+        {'4',           "4"},
+        {'5',           "5"},
+        {'6',           "6"},
+        {'7',           "7"},
+        {'8',           "8"},
+        {'9',           "9"},
+        {'A',           "A"},
+        {'B',           "B"},
+        {'C',           "C"},
+        {'D',           "D"},
+        {'E',           "E"},
+        {'F',           "F"},
+        {'G',           "G"},
+        {'H',           "H"},
+        {'I',           "I"},
+        {'J',           "J"},
+        {'K',           "K"},
+        {'L',           "L"},
+        {'M',           "M"},
+        {'N',           "N"},
+        {'O',           "O"},
+        {'P',           "P"},
+        {'Q',           "Q"},
+        {'R',           "R"},
+        {'S',           "S"},
+        {'T',           "T"},
+        {'U',           "U"},
+        {'V',           "V"},
+        {'W',           "W"},
+        {'X',           "X"},
+        {'Y',           "Y"},
+        {'Z',           "Z"},
+        {VK_LWIN,       "LeftWin"},
+        {VK_RWIN,       "RightWin"},
+        {VK_NUMPAD0,    "NumPad0"},
+        {VK_NUMPAD1,    "NumPad1"},
+        {VK_NUMPAD2,    "NumPad2"},
+        {VK_NUMPAD3,    "NumPad3"},
+        {VK_NUMPAD4,    "NumPad4"},
+        {VK_NUMPAD5,    "NumPad5"},
+        {VK_NUMPAD6,    "NumPad6"},
+        {VK_NUMPAD7,    "NumPad7"},
+        {VK_NUMPAD8,    "NumPad8"},
+        {VK_NUMPAD9,    "NumPad9"},
+        {VK_MULTIPLY,   "*"},
+        {VK_ADD,        "+"},
+        {VK_SUBTRACT,   "-"},
+        {VK_DECIMAL,    "."},
+        {VK_DIVIDE,     "/"},
+        {VK_F1,         "F1"},
+        {VK_F2,         "F2"},
+        {VK_F3,         "F3"},
+        {VK_F4,         "F4"},
+        {VK_F5,         "F5"},
+        {VK_F6,         "F6"},
+        {VK_F7,         "F7"},
+        {VK_F8,         "F8"},
+        {VK_F9,         "F9"},
+        {VK_F10,        "F10"},
+        {VK_F11,        "F11"},
+        {VK_F12,        "F12"},
+        {VK_NUMLOCK,    "NumLock"},
+        {VK_SCROLL,     "ScrollLock"},
+        {VK_LSHIFT,     "LeftShift"},
+        {VK_RSHIFT,     "RightShift"},
+        {VK_LCONTROL,   "LeftControl"},
+        {VK_RCONTROL,   "RightControl"},
+        {VK_LMENU,      "LeftAlt"},
+        {VK_RMENU,      "RightAlt"},
+        {VK_OEM_1,      ";:"},
+        {VK_OEM_PLUS,   "=+"},
+        {VK_OEM_COMMA,  ",<"},
+        {VK_OEM_MINUS,  "-_"},
+        {VK_OEM_PERIOD, ".>"},
+        {VK_OEM_2,      "/?"},
+        {VK_OEM_3,      "`~"},
+        {VK_OEM_4,      "[{"},
+        {VK_OEM_5,      "\\|"},
+        {VK_OEM_6,      "]}"},
+        {VK_OEM_7,      "'\""},
+    };
+
+    m_hook = SetWindowsHookEx(WH_KEYBOARD_LL, keyHookProc, GetModuleHandle(NULL), 0); // 安装键盘钩子
+}
+
+KeyListener::~KeyListener()
+{
+    if (m_hook)
+    {
+        UnhookWindowsHookEx(m_hook); // 卸载键盘钩子
+        m_hook = nullptr;
+    }
+}
