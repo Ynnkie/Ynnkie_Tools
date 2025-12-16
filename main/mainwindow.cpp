@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "keylistener.h"
+#include "publicinfomanager.h"
 
-#include <QApplication>
 #include <QPushButton>
 #include <QMouseEvent>
 
@@ -50,8 +50,8 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 void MainWindow::uiInit()
 {
     // 窗口
-    setWindowIcon(QIcon(QApplication::applicationDirPath() + "/res/Ynnkie.png"));
-    setWindowTitle("云可工具");
+    setWindowIcon(QIcon(info::get("iconPath").toString()));
+    setWindowTitle(info::get("name").toString());
     setFixedSize(800, 600);
     setWindowFlags(Qt::FramelessWindowHint);   // 无边框窗口
 
