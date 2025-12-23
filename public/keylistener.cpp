@@ -54,6 +54,8 @@ QVector<QString> KeyListener::pressedKeys() const
         };
         if (getType(a) != getType(b))
             return getType(a) < getType(b);
+        else if (getType(a) == 6)
+            return a.toInt() < b.toInt();
         return a < b;
     });
 
