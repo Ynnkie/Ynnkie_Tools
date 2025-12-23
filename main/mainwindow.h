@@ -6,6 +6,7 @@
 #include <QMainWindow>
 
 class QPushButton;
+class QSystemTrayIcon;
 class KeyListener;
 
 class MainWindow : public QMainWindow
@@ -13,7 +14,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow();
     ~MainWindow();
 
 protected:
@@ -24,9 +25,11 @@ protected:
 
 private:
     void uiInit();  // 初始化UI
+    void systemTrayIconInit();  // 初始化系统托盘图标
 
 private:
     QPushButton* m_closeBtn; // 关闭按钮
+    QSystemTrayIcon* m_systemTrayIcon;   // 系统托盘图标
 
     KeyListener* m_keyListener; // 按键监听器
 
