@@ -20,9 +20,11 @@ execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR
 
 # 包含目录
 include_directories(public)
+include_directories(components)
 
 # 添加子目录
 add_subdirectory(public)
+add_subdirectory(components)
 add_subdirectory(main)
 
 qt_add_executable(
@@ -36,6 +38,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Widgets
     # 自定义
     public
+    components
     main
 )   # 链接库
 

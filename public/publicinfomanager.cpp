@@ -31,6 +31,7 @@ Publicinfomanager::Publicinfomanager()
 {
     m_publicInfo.insert("name", "云可工具");
     m_publicInfo.insert("iconPath", QApplication::applicationDirPath() + "/res/Ynnkie.png");
+    m_publicInfo.insert("resPath", QApplication::applicationDirPath() + "/res/");
 }
 
 Publicinfomanager::~Publicinfomanager()

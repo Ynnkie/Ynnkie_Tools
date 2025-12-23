@@ -1,8 +1,8 @@
 #include "mainwindow.h"
 #include "keylistener.h"
 #include "publicinfomanager.h"
+#include "pushbutton.h"
 
-#include <QPushButton>
 #include <QMouseEvent>
 #include <QSystemTrayIcon>
 #include <QMenu>
@@ -61,8 +61,7 @@ void MainWindow::uiInit()
     setWindowFlags(Qt::FramelessWindowHint);   // 无边框窗口
 
     // 关闭按钮
-    m_closeBtn = new QPushButton(this);
-    m_closeBtn->setText("关闭");
+    m_closeBtn = new PushButton(this);
     m_closeBtn->setGeometry(width() - 50, 0, 50, 50);
     m_closeBtn->show();
     connect(m_closeBtn, &QPushButton::clicked, this, &MainWindow::close);
